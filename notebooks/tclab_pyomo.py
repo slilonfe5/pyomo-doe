@@ -677,29 +677,210 @@ def extract_results(model, name="Pyomo results", number_of_states=2):
 
 
 def extract_plot_results(tc_exp_data, model, number_of_states=2):
-    """Extract and plot the results of the Pyomo model
+    """Extract and plot Pyomo or DoE optimize_experiments results.
 
     Arguments:
     ----------
-    tc_exp_data: experimental data, TC_Lab_data instance
-    model: Pyomo model
+    tc_exp_data: experimental data (`TC_Lab_data`) or list of experiments
+    model: Pyomo model, DoE results dict, or object with `results` attribute
     number_of_states: int, number of states, default: 2
 
     Returns:
     --------
-    solution: solution from Pyomo model, extracted and stored in a TC_Lab_data instance
-
+    For a Pyomo model input, returns one `TC_Lab_data` object.
+    For optimize_experiments results, returns a list of `TC_Lab_data` objects
+    (one per optimized experiment).
     """
 
+    empty_exp = TC_Lab_data(
+        None, None, None, None, None, None, None, None, None, None, None
+    )
+
+    if isinstance(model, dict):
+        doe_results = model
+    elif hasattr(model, "results"):
+        doe_results = model.results
+    else:
+        doe_results = None
+    if (
+        not isinstance(doe_results, dict)
+        or "solution" not in doe_results
+        or "param_scenarios" not in doe_results["solution"]
+    ):
+        doe_results = None
+
+    # Branch 1: multi-experiment DoE optimize_experiments() results
+    if doe_results is not None:
+        param_scenarios = doe_results["solution"].get("param_scenarios", [])
+        if len(param_scenarios) == 0:
+            raise ValueError("No parameter scenarios found in optimize_experiments results.")
+
+        scenario = param_scenarios[0]
+        experiments = scenario.get("experiments", [])
+        if len(experiments) == 0:
+            raise ValueError("No experiment entries found in optimize_experiments results.")
+
+        if tc_exp_data is None:
+            exp_list = []
+        elif isinstance(tc_exp_data, (list, tuple)):
+            exp_list = list(tc_exp_data)
+        else:
+            exp_list = [tc_exp_data]
+        if len(exp_list) > 1 and len(exp_list) != len(experiments):
+            print(
+                "Warning: Number of provided tc_exp_data entries does not match the "
+                "number of optimized experiments. Reusing the last dataset as needed."
+            )
+
+        mod_results = []
+
+        # create figure
+        plt.figure(figsize=(10, 6))
+        ax_temp = plt.subplot(2, 1, 1)
+        ax_u = plt.subplot(2, 1, 2)
+
+        cmap = plt.get_cmap("tab10")
+
+        for i, exp_result in enumerate(experiments):
+            if len(exp_list) == 0:
+                exp_data = empty_exp
+            elif len(exp_list) == 1:
+                exp_data = exp_list[0]
+            elif i < len(exp_list):
+                exp_data = exp_list[i]
+            else:
+                exp_data = exp_list[-1]
+            exp_id = exp_result.get("exp_id", i)
+            suffix = f" (exp {exp_id})"
+            color = cmap(i % 10)
+
+            design = np.asarray(exp_result.get("design", []), dtype=float)
+            if design.ndim > 1:
+                # Primary design variable is stored first when multiple values exist.
+                design = design[:, 0]
+
+            outputs = np.asarray(exp_result.get("outputs", []), dtype=float)
+            ts1_pred = None
+            ts2_pred = None
+            if outputs.ndim == 1:
+                ts1_pred = outputs
+            elif outputs.ndim == 2 and outputs.shape[1] > 0:
+                ts1_pred = outputs[:, 0]
+                if outputs.shape[1] > 1:
+                    ts2_pred = outputs[:, 1]
+
+            if exp_data.time is not None and len(exp_data.time) == len(design):
+                time = np.asarray(exp_data.time)
+            else:
+                time = np.arange(len(design))
+
+            mod_i = TC_Lab_data(
+                f"Pyomo DoE results exp {exp_id}",
+                time,
+                None,
+                design,
+                exp_data.P1 if hasattr(exp_data, "P1") else None,
+                ts1_pred,
+                None,
+                None,
+                exp_data.P2 if hasattr(exp_data, "P2") else None,
+                ts2_pred,
+                exp_data.Tamb if hasattr(exp_data, "Tamb") else None,
+            )
+            mod_results.append(mod_i)
+
+            if exp_data.T1 is not None and exp_data.time is not None:
+                ax_temp.scatter(
+                    exp_data.time,
+                    exp_data.T1,
+                    marker='o',
+                    label="$T_{S,1}$ measured" + suffix,
+                    alpha=0.4,
+                    color=color,
+                )
+            if mod_i.TS1_data is not None:
+                ax_temp.plot(
+                    mod_i.time,
+                    mod_i.TS1_data,
+                    label="$T_{S,1}$ predicted" + suffix,
+                    color=color,
+                )
+            if exp_data.T2 is not None and exp_data.time is not None:
+                ax_temp.scatter(
+                    exp_data.time,
+                    exp_data.T2,
+                    marker='s',
+                    label="$T_{S,2}$ measured" + suffix,
+                    alpha=0.4,
+                    color=color,
+                )
+            if mod_i.TS2_data is not None:
+                ax_temp.plot(
+                    mod_i.time,
+                    mod_i.TS2_data,
+                    label="$T_{S,2}$ predicted" + suffix,
+                    color=color,
+                    linestyle='--',
+                )
+
+            if exp_data.u1 is not None and exp_data.time is not None:
+                ax_u.scatter(
+                    exp_data.time,
+                    exp_data.u1,
+                    marker='o',
+                    label="$u_1$ measured" + suffix,
+                    color=color,
+                    alpha=0.4,
+                )
+            if mod_i.u1 is not None:
+                ax_u.plot(
+                    mod_i.time,
+                    mod_i.u1,
+                    label="$u_1$ optimized" + suffix,
+                    color=color,
+                )
+            if exp_data.u2 is not None and exp_data.time is not None:
+                ax_u.scatter(
+                    exp_data.time,
+                    exp_data.u2,
+                    marker='s',
+                    label="$u_2$ measured" + suffix,
+                    color=color,
+                    alpha=0.4,
+                )
+
+        ax_temp.set_ylabel('Temperature (°C)')
+        temp_handles, _ = ax_temp.get_legend_handles_labels()
+        if len(temp_handles) > 0:
+            ax_temp.legend(ncol=2 if len(experiments) > 1 else 1)
+        ax_temp.grid(True)
+
+        ax_u.set_ylabel('Heater Power (%)')
+        ax_u.set_xlabel('Time (s)')
+        control_handles, _ = ax_u.get_legend_handles_labels()
+        if len(control_handles) > 0:
+            ax_u.legend(ncol=2 if len(experiments) > 1 else 1)
+        ax_u.grid(True)
+
+        plt.tight_layout()
+        plt.show()
+
+        print("DoE optimize_experiments summary:")
+        print("parameter scenario:", 0)
+        print("number of experiments:", len(experiments))
+        print("objective:", doe_results["solution"].get("objective", "unknown"))
+        print(" ")
+
+        return mod_results
+
+    # Branch 2: original single-model extraction and plotting
     # For convenience, save in a shorter variable name
     if tc_exp_data is not None:
         exp = tc_exp_data
     else:
-        exp = TC_Lab_data(
-            None, None, None, None, None, None, None, None, None, None, None
-        )
+        exp = empty_exp
 
-    mod = extract_results(model)
+    mod = extract_results(model, number_of_states=number_of_states)
 
     # create figure
     plt.figure(figsize=(10, 6))
@@ -719,8 +900,6 @@ def extract_plot_results(tc_exp_data, model, number_of_states=2):
         'u1_mod': 'red',  # model
         'u2_mod': 'purple',  # model
     }
-
-    LW = 3.0  # line width
 
     four_states = (mod.TS2_data is not None) and (mod.T2 is not None)
 
