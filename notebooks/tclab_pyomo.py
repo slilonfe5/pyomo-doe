@@ -758,7 +758,7 @@ def extract_plot_results(tc_exp_data, model, number_of_states=2):
         for i, exp_result in enumerate(experiments):
             exp_data = empty_exp if len(exp_list) == 0 else exp_list[min(i, len(exp_list) - 1)]
             exp_id = exp_result.get("exp_id", i)
-            suffix = f" (exp {exp_id})"
+            suffix = f" (exp {exp_id+1})"
             color = cmap(i % 10)
 
             try:
