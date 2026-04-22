@@ -133,3 +133,108 @@ In `acc_contrib_SSC/parmest_regularization.ipynb`, see the appended physical-pri
 - The prior is intentionally "weak-to-moderate" and not a hard constraint.
 - If optimization is over-regularized, reduce `prior_weight`.
 - If non-identifiability persists (flat profile likelihood), increase prior weight slightly or tighten selected prior variances.
+
+---
+
+## 10) Thermodynamics-first prior (independent of previous fitted guesses)
+
+This section intentionally does **not** use previous regression estimates as input. It starts from heat-transfer and thermal-mass reasoning.
+
+### 10.1 Thermodynamic basis
+
+Using lumped balances,
+
+- Heater time scale is approximately
+  - `tau_H ~ CpH / (Ua + Ub)`
+- Sensor lag time scale is approximately
+  - `tau_S ~ CpS / Ub`
+
+and heat transfer follows Newton-type linearized exchange (`q ~ U * DeltaT`) with effective conductances.
+
+Plausible TCLab-scale assumptions:
+
+- Natural convection + radiation produce heater-to-ambient conductance in the few `1e-2 W/K` range.
+- Heater-to-sensor coupling (through mounting/conduction path) is typically same order, often slightly smaller.
+- Effective heater thermal capacitance is order `1-10 J/K`.
+- Effective sensor thermal capacitance is order `0.05-0.5 J/K`.
+
+### 10.2 Recommended physically based prior mean
+
+In physical space:
+
+- `Ua = 0.030 W/K`
+- `Ub = 0.018 W/K`
+- `CpH = 7.5 J/K`
+- `CpS = 0.22 J/K`
+
+Mapped to estimator space (`Ua, Ub, inv_CpH, inv_CpS`):
+
+- `Ua = 0.030`
+- `Ub = 0.018`
+- `inv_CpH = 1/7.5 = 0.1333`
+- `inv_CpS = 1/0.22 = 4.5455`
+
+### 10.3 Uncertainty and correlation (physical rationale)
+
+Suggested 1-sigma uncertainty (physical space):
+
+- `sigma(Ua) = 0.012` (40%)
+- `sigma(Ub) = 0.0072` (40%)
+- `sigma(CpH) = 2.25` (30%)
+- `sigma(CpS) = 0.11` (50%)
+
+Suggested correlation matrix in `[Ua, Ub, CpH, CpS]`:
+
+```text
+[[ 1.00, -0.20,  0.55, 0.05],
+ [-0.20,  1.00,  0.25, 0.75],
+ [ 0.55,  0.25,  1.00, 0.30],
+ [ 0.05,  0.75,  0.30, 1.00]]
+```
+
+Interpretation:
+
+- `Ub`-`CpS` strong positive: both govern sensor lag (`tau_S`).
+- `Ua`-`CpH` moderate positive: both govern heater time scale (`tau_H`).
+- `Ua`-`Ub` mild negative: partial competition in heater cooling pathways.
+
+### 10.4 Resulting covariance and prior FIM in estimator space
+
+After Jacobian transform from `[Ua, Ub, CpH, CpS]` to
+`[Ua, Ub, inv_CpH, inv_CpS]`, the covariance is:
+
+```text
+               Ua        Ub   inv_CpH   inv_CpS
+Ua       0.000144 -0.000017 -0.000264 -0.001364
+Ub      -0.000017  0.000052 -0.000072 -0.012273
+inv_CpH -0.000264 -0.000072  0.001600  0.027273
+inv_CpS -0.001364 -0.012273  0.027273  5.165289
+```
+
+and the corresponding prior information matrix `prior_FIM = inv(cov)` is:
+
+```text
+                Ua         Ub   inv_CpH  inv_CpS
+Ua       12923.299  12435.627  2340.824   20.599
+Ub       12435.627  56127.396  2470.870  123.596
+inv_CpH   2340.824   2470.870  1111.891    0.618
+inv_CpS     20.599    123.596     0.618    0.489
+```
+
+If needed, apply a global scalar `prior_weight` (for example `0.05-0.2`) to tune regularization strength relative to SSE.
+
+## 11) Additional TCLab details that would significantly improve this prior
+
+If you can share these, I can tighten the prior with much stronger physical backing:
+
+- Heater plate geometry and material (dimensions, thickness, alloy).
+- Sensor package type/mass and exact mounting (epoxy amount, contact area).
+- Surface finish / emissivity estimate for heater assembly.
+- Fan/airflow condition (still air vs forced convection).
+- A short clean step-response test summary:
+  - approximate heater-node rise time,
+  - sensor lag time,
+  - steady-state `DeltaT` at known input power.
+- Measurement-noise estimate for `T1/T2` in your setup.
+
+With these, we can derive tighter ranges for `Ua, Ub, CpH, CpS`, then regenerate a more defensible covariance and prior FIM.
