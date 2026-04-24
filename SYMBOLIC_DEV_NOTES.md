@@ -44,3 +44,22 @@ Adapt both notebooks so they explicitly show the central finite-difference DoE p
 3. Add a matching `pynumero` FIM block
 4. Add timing and comparison cells
 5. Inspect `doe_four_states_symbolic.ipynb` for benchmark-style adaptation
+
+## Progress Update
+
+### `doe_exercise_symbolic.ipynb`
+
+The notebook now includes a new end section after the D-optimality discussion:
+
+- `## Sensitivity Computation for the Design of Experiments`
+- a markdown cell introducing the sensitivity matrix `Q`
+- a markdown cell introducing the FIM expression `M = Q^T \Sigma^{-1} Q`
+- a markdown cell contrasting:
+  - central finite differences via parameter perturbations
+  - automatic differentiation via PyNumero
+
+A new empty code cell has been added after this markdown section and is available for the first comparison block.
+
+### `doe_four_states_symbolic.ipynb`
+
+No reviewer-facing symbolic content has been added yet. Current changes appear limited to notebook metadata / kernel information.
