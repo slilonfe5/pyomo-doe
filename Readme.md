@@ -82,12 +82,12 @@ git clone git@github.com:dowlinglab/pyomo-doe.git
 
 ### For workshop maintainers
 
-To update or rebuild the workshop materials locally, create a separate maintainer environment. In addition to the workshop dependencies, the latest Jupyter Book uses the MyST toolchain and requires `nodejs` to be available in the environment.
+To update or rebuild the workshop materials locally, create a separate maintainer environment. In addition to the workshop dependencies, the latest Jupyter Book uses the MyST toolchain and requires `nodejs` to be available in the environment. We recommend pinning to the Node.js 22 LTS release for compatibility with the local Jupyter Book preview server.
 
 Use the following commands to create the maintainer environment:
 
 ```
-conda create -y -n pyomo-doe-maint -c conda-forge -c IDAES-PSE python=3.11 idaes-pse pandas numpy matplotlib scipy ipykernel nbformat nodejs pip
+conda create -y -n pyomo-doe-maint -c conda-forge -c IDAES-PSE python=3.11 idaes-pse pandas numpy matplotlib scipy ipykernel nbformat nodejs=22 pip
 conda activate pyomo-doe-maint
 python -m pip install -U jupyter-book
 idaes get-extensions

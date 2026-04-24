@@ -4,6 +4,10 @@ project:
   authors:
     - name: Alexander Dowling
     - name: Dan Laky
+    - name: Stephen Cini
+    - name: Shammah Lilonfe
+    - name: Shuvashish Mondal
+    - name: Shilpa Narasimhan
   exclude:
     - .DS_Store
     - '**.ipynb_checkpoints'
@@ -20,12 +24,18 @@ project:
     - file: regression.md
       children:
         - file: notebooks/parmest.ipynb
-        - file: notebooks/parmest_exercise.ipynb
+        - file: notebooks/uncertainty_quantification.ipynb
+        - file: notebooks/parmest_multistart_profilelikelihood.ipynb
+        - file: notebooks/parmest_regularization.ipynb
+        # - file: notebooks/parmest_exercise.ipynb
     - file: mbdoe.md
       children:
-        - file: notebooks/doe_exploratory_analysis.ipynb
-        - file: notebooks/doe_optimize.ipynb
-        - file: notebooks/doe_exercise.ipynb
+        # - file: notebooks/doe_exploratory_analysis.ipynb
+        # - file: notebooks/doe_optimize.ipynb
+        - file: notebooks/doe_optimize_pseudo_A.ipynb
+        - file: notebooks/doe_optimize_ACC_2026.ipynb
+        - file: notebooks/tclab_multiexperiment.ipynb
+        # - file: notebooks/doe_exercise.ipynb
     - file: exercises.md
       children:
         - file: exercise_solutions/parmest_exercise.ipynb
