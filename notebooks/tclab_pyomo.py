@@ -403,15 +403,25 @@ class TC_Lab_experiment(Experiment):
             m.inv_CpS = Var(initialize=self.theta_initial["inv_CpS"], bounds=(0, 1e3))
             m.inv_CpS.fix()
         else:
-            # REPARAMETRIZATION
-            m.beta_1 = Var(initialize=self.theta_initial["Ua"] * self.theta_initial["inv_CpH"], bounds=(0, 1e6))
-            m.beta_1.fix()
-            m.beta_2 = Var(initialize=self.theta_initial["Ub"] * self.theta_initial["inv_CpH"], bounds=(1e-6, 1e6))
-            m.beta_2.fix()
-            m.beta_3 = Var(initialize=self.theta_initial["Ub"] * self.theta_initial["inv_CpS"], bounds=(0, 1e6))
-            m.beta_3.fix()
-            m.beta_4 = Var(initialize=self.alpha * pyovalue(m.P1) * self.theta_initial["inv_CpH"], bounds=(0, 1e6))
-            m.beta_4.fix()
+            if all(k in self.theta_initial for k in ("beta_1", "beta_2", "beta_3", "beta_4")):
+                m.beta_1 = Var(initialize=self.theta_initial["beta_1"], bounds=(0, 1e6))
+                m.beta_1.fix()
+                m.beta_2 = Var(initialize=self.theta_initial["beta_2"], bounds=(1e-6, 1e6))
+                m.beta_2.fix()
+                m.beta_3 = Var(initialize=self.theta_initial["beta_3"], bounds=(0, 1e6))
+                m.beta_3.fix()
+                m.beta_4 = Var(initialize=self.theta_initial["beta_4"], bounds=(0, 1e6))
+                m.beta_4.fix()
+            else: 
+                # REPARAMETRIZATION
+                m.beta_1 = Var(initialize=self.theta_initial["Ua"] * self.theta_initial["inv_CpH"], bounds=(0, 1e6))
+                m.beta_1.fix()
+                m.beta_2 = Var(initialize=self.theta_initial["Ub"] * self.theta_initial["inv_CpH"], bounds=(1e-6, 1e6))
+                m.beta_2.fix()
+                m.beta_3 = Var(initialize=self.theta_initial["Ub"] * self.theta_initial["inv_CpS"], bounds=(0, 1e6))
+                m.beta_3.fix()
+                m.beta_4 = Var(initialize=self.alpha * pyovalue(m.P1) * self.theta_initial["inv_CpH"], bounds=(0, 1e6))
+                m.beta_4.fix()
 
             if self.number_of_states == 4:
                 m.beta_5 = Var(initialize=self.theta_initial["Uc"] / self.theta_initial["inv_CpH"], bounds=(0, 1e6))
@@ -677,29 +687,226 @@ def extract_results(model, name="Pyomo results", number_of_states=2):
 
 
 def extract_plot_results(tc_exp_data, model, number_of_states=2):
-    """Extract and plot the results of the Pyomo model
+    """Extract and plot Pyomo or DoE optimize_experiments results.
 
     Arguments:
     ----------
-    tc_exp_data: experimental data, TC_Lab_data instance
-    model: Pyomo model
+    tc_exp_data: experimental data (`TC_Lab_data`) or list of experiments
+    model: Pyomo model, DoE results dict, or object with `results` attribute
     number_of_states: int, number of states, default: 2
 
     Returns:
     --------
-    solution: solution from Pyomo model, extracted and stored in a TC_Lab_data instance
-
+    For a Pyomo model input, returns one `TC_Lab_data` object.
+    For optimize_experiments results, returns a list of `TC_Lab_data` objects
+    (one per optimized experiment).
     """
 
+    empty_exp = TC_Lab_data(
+        None, None, None, None, None, None, None, None, None, None, None
+    )
+
+    doe_results = model if isinstance(model, dict) else None
+    if doe_results is None:
+        try:
+            doe_results = getattr(model, "results", None)
+        except Exception:
+            doe_results = None
+    if (
+        not isinstance(doe_results, dict)
+        or "solution" not in doe_results
+        or "param_scenarios" not in doe_results["solution"]
+    ):
+        doe_results = None
+
+    # Branch 1: multi-experiment DoE optimize_experiments() results
+    if doe_results is not None:
+        param_scenarios = doe_results["solution"].get("param_scenarios", [])
+        if len(param_scenarios) == 0:
+            raise ValueError("No parameter scenarios found in optimize_experiments results.")
+
+        scenario = param_scenarios[0]
+        experiments = scenario.get("experiments", [])
+        if len(experiments) == 0:
+            raise ValueError("No experiment entries found in optimize_experiments results.")
+
+        if tc_exp_data is None:
+            exp_list = []
+        elif isinstance(tc_exp_data, (list, tuple)):
+            exp_list = list(tc_exp_data)
+        else:
+            exp_list = [tc_exp_data]
+        if len(exp_list) not in (0, 1, len(experiments)):
+            raise ValueError(
+                "Number of provided tc_exp_data entries does not match the number "
+                "of optimized experiments."
+            )
+
+        mod_results = []
+
+        # create figure
+        plt.figure(figsize=(10, 6))
+        ax_temp = plt.subplot(2, 1, 1)
+        ax_u = plt.subplot(2, 1, 2)
+
+        cmap = plt.get_cmap("tab10")
+        try:
+            exp_blocks = model.model.param_scenario_blocks[0].exp_blocks
+        except Exception as err:
+            raise ValueError(
+                "Multi-experiment plotting requires a DesignOfExperiments object "
+                "with solved model blocks at "
+                "model.model.param_scenario_blocks[0].exp_blocks[i]."
+                "fd_scenario_blocks[0]."
+            ) from err
+        if len(exp_blocks) < len(experiments):
+            raise ValueError(
+                "Model contains fewer experiment blocks than optimize_experiments "
+                "results entries."
+            )
+
+        for i, exp_result in enumerate(experiments):
+            exp_data = empty_exp if len(exp_list) == 0 else exp_list[min(i, len(exp_list) - 1)]
+            exp_id = exp_result.get("exp_id", i)
+            suffix = f" (exp {exp_id+1})"
+            color = cmap(i % 10)
+
+            try:
+                exp_model = exp_blocks[i].fd_scenario_blocks[0]
+            except Exception as err:
+                raise ValueError(
+                    f"Could not access experiment block {i} at "
+                    "model.model.param_scenario_blocks[0].exp_blocks[i]."
+                    "fd_scenario_blocks[0]."
+                ) from err
+
+            if not hasattr(exp_model, "t"):
+                raise ValueError(
+                    f"Experiment block {i} does not contain a time set `t`."
+                )
+
+            mod_i = extract_results(
+                exp_model,
+                name=f"Pyomo DoE results exp {exp_id}",
+                number_of_states=number_of_states,
+            )
+            mod_results.append(mod_i)
+
+            if exp_data.T1 is not None and exp_data.time is not None:
+                ax_temp.scatter(
+                    exp_data.time,
+                    exp_data.T1,
+                    marker='o',
+                    label="$T_{S,1}$ measured" + suffix,
+                    alpha=0.4,
+                    color=color,
+                )
+            if mod_i.TS1_data is not None:
+                ax_temp.plot(
+                    mod_i.time,
+                    mod_i.TS1_data,
+                    label="$T_{S,1}$ predicted" + suffix,
+                    color=color,
+                )
+            if mod_i.T1 is not None:
+                ax_temp.plot(
+                    mod_i.time,
+                    mod_i.T1,
+                    label="$T_{H,1}$ predicted" + suffix,
+                    color=color,
+                    linestyle=':',
+                )
+            if exp_data.T2 is not None and exp_data.time is not None:
+                ax_temp.scatter(
+                    exp_data.time,
+                    exp_data.T2,
+                    marker='s',
+                    label="$T_{S,2}$ measured" + suffix,
+                    alpha=0.4,
+                    color=color,
+                )
+            if mod_i.TS2_data is not None:
+                ax_temp.plot(
+                    mod_i.time,
+                    mod_i.TS2_data,
+                    label="$T_{S,2}$ predicted" + suffix,
+                    color=color,
+                    linestyle='--',
+                )
+            if mod_i.T2 is not None:
+                ax_temp.plot(
+                    mod_i.time,
+                    mod_i.T2,
+                    label="$T_{H,2}$ predicted" + suffix,
+                    color=color,
+                    linestyle='-.',
+                )
+
+            if exp_data.u1 is not None and exp_data.time is not None:
+                ax_u.scatter(
+                    exp_data.time,
+                    exp_data.u1,
+                    marker='o',
+                    label="$u_1$ measured" + suffix,
+                    color=color,
+                    alpha=0.4,
+                )
+            if mod_i.u1 is not None:
+                ax_u.plot(
+                    mod_i.time,
+                    mod_i.u1,
+                    label="$u_1$ optimized" + suffix,
+                    color=color,
+                )
+            if exp_data.u2 is not None and exp_data.time is not None:
+                ax_u.scatter(
+                    exp_data.time,
+                    exp_data.u2,
+                    marker='s',
+                    label="$u_2$ measured" + suffix,
+                    color=color,
+                    alpha=0.4,
+                )
+
+        ax_temp.set_ylabel('Temperature (°C)')
+        temp_handles, _ = ax_temp.get_legend_handles_labels()
+        if len(temp_handles) > 0:
+            ax_temp.legend(ncol=2 if len(experiments) > 1 else 1)
+        ax_temp.grid(True)
+
+        ax_u.set_ylabel('Heater Power (%)')
+        ax_u.set_xlabel('Time (s)')
+        control_handles, _ = ax_u.get_legend_handles_labels()
+        if len(control_handles) > 0:
+            ax_u.legend(ncol=2 if len(experiments) > 1 else 1)
+        ax_u.grid(True)
+
+        plt.tight_layout()
+        plt.show()
+
+        print("DoE optimize_experiments summary:")
+        print("parameter scenario:", 0)
+        print("number of experiments:", len(experiments))
+        print("objective:", doe_results["solution"].get("objective", "unknown"))
+        print(" ")
+
+        return mod_results
+
+    # Branch 2: original single-model extraction and plotting
     # For convenience, save in a shorter variable name
     if tc_exp_data is not None:
         exp = tc_exp_data
     else:
-        exp = TC_Lab_data(
-            None, None, None, None, None, None, None, None, None, None, None
+        exp = empty_exp
+
+    if not hasattr(model, "t"):
+        raise ValueError(
+            "Single-experiment plotting expects a solved Pyomo model with time set `t`. "
+            "For multi-experiment plotting, pass a DesignOfExperiments object or "
+            "results from optimize_experiments()."
         )
 
-    mod = extract_results(model)
+    mod = extract_results(model, number_of_states=number_of_states)
 
     # create figure
     plt.figure(figsize=(10, 6))
@@ -719,8 +926,6 @@ def extract_plot_results(tc_exp_data, model, number_of_states=2):
         'u1_mod': 'red',  # model
         'u2_mod': 'purple',  # model
     }
-
-    LW = 3.0  # line width
 
     four_states = (mod.TS2_data is not None) and (mod.T2 is not None)
 
@@ -827,14 +1032,18 @@ def extract_plot_results(tc_exp_data, model, number_of_states=2):
     return mod
 
 
-def results_summary(result):
+def results_summary(result, reparam=False):
     eigenvalues, eigenvectors = np.linalg.eig(result)
 
     min_eig = min(eigenvalues)
 
     print("======Results Summary======")
-    print("Four design criteria log10() value:")
-    print("A-optimality:", np.log10(np.trace(result)))
+    print("Five design criteria log10() value:")
+    print("Pseudo A-optimality:", np.log10(np.trace(result)))
+    try:
+        print("A-optimality:", np.log10(np.trace(np.linalg.inv(result))))
+    except np.linalg.LinAlgError:
+        print("A-optimality: Matrix is singular, cannot compute inverse.")
     print("D-optimality:", np.log10(np.linalg.det(result)))
     print("E-optimality:", np.log10(min_eig))
     print("Modified E-optimality:", np.log10(np.linalg.cond(result)))
@@ -842,4 +1051,16 @@ def results_summary(result):
 
     print("\neigenvalues:\n", eigenvalues)
 
-    print("\neigenvectors:\n", eigenvectors)
+    # print("\neigenvectors:\n", eigenvectors)
+    if reparam:
+        params = ["beta_1", "beta_2", "beta_3", "beta_4"]
+    else:
+        params = ["Ua", "Ub", "inv_CpH", "inv_CpS"]
+
+    eigvec_df = pd.DataFrame(
+        eigenvectors,
+        index=params,
+        columns=[f"eigvec_{i+1}" for i in range(eigenvectors.shape[1])]
+    )    
+    print("\nEigenvector matrix:\n", eigvec_df.round(4))
+    
