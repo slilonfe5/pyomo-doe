@@ -111,9 +111,9 @@ GitHub Pages is configured via:
 The workflow:
 
 - installs Python and `nbformat` for notebook preprocessing
-- installs Jupyter Book via npm
+- installs MyST Markdown via npm
 - runs `scripts/process_notebooks.py`
-- builds the site with `jupyter book build --html`
+- builds the site with `myst build --html`
 - publishes `./_build/html` to GitHub Pages
 
 Why `./_build/html` is used for GitHub Pages:
@@ -152,8 +152,6 @@ Important conclusions:
 
 Planned next step:
 
-- switch the static deployment workflow from `jupyter-book build --html` to `myst build --html`
-- make the same change in local static preview helpers and publish documentation
 - re-test whether the generated `_build/html/index.html` correctly prefixes links with `BASE_URL=/pyomo-doe`
 
 Rationale for this plan:

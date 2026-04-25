@@ -51,7 +51,7 @@ case "${MODE}" in
 esac
 
 python ./scripts/process_notebooks.py
-jupyter book build --html
+myst build --html
 
 if [[ "${MODE}" == "pages" ]]; then
     ln -s "${BUILD_DIR}" "${TMP_ROOT}/${REPO_NAME}"

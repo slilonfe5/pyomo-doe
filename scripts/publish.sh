@@ -3,7 +3,7 @@
 set -euo pipefail
 
 python ./scripts/process_notebooks.py
-jupyter book build --html
+myst build --html
 
 echo "Build complete."
 echo "For GitHub Pages deployment, commit and push your changes to main."
