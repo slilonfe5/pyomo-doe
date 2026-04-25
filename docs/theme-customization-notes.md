@@ -57,8 +57,33 @@ Behavior:
 Implementation notes:
 
 - the server-rendered theme bundle was updated so the Colab link appears in the initial HTML
-- a cache-busted shared client chunk filename was introduced so Safari would not hold onto an old immutable asset after local theme edits
-- the final HTML should contain exactly one Colab link per notebook page
+- the vendored client assets were kept aligned with the same implementation so hydration does not remove or duplicate the button
+- the current implementation no longer relies on a temporary DOM-injection fallback
+- the shared client chunk now uses a versioned filename to reduce stale-asset behavior during local Safari refreshes
+- the final HTML and hydrated page should contain exactly one Colab link per notebook page
+
+## Verified Behavior
+
+As of April 25, 2026, the local preview was rechecked after simplifying the implementation.
+
+Verified on:
+
+- `http://localhost:4300/notebooks/parmest-multistart-profilelikelihood`
+
+Observed header actions on that notebook page:
+
+- GitHub
+- Colab
+- Edit
+- Downloads
+
+The page now renders a single Colab icon in the header action row, and the duplicate-icon behavior caused by the earlier fallback injector is gone.
+
+Safari note:
+
+- on a local soft refresh in Safari, a transient second Colab icon may still appear briefly before the page settles
+- on a hard refresh, the page consistently settles to the correct single-icon state
+- this was acceptable for deployment because the final hydrated state is correct and the GitHub Pages deployment will ship the committed vendored assets directly
 
 ## Build / Preview Scripts
 
@@ -67,16 +92,24 @@ These scripts were updated to use the vendored theme flow:
 - `scripts/build_local.sh`
 - `scripts/publish.sh`
 
-The old patching helper was removed:
+GitHub Pages is configured via:
 
-- `scripts/patch_book_theme.py`
+- `.github/workflows/deploy.yml`
+
+The workflow:
+
+- installs Python and `nbformat` for notebook preprocessing
+- installs Jupyter Book via npm
+- runs `scripts/process_notebooks.py`
+- builds the site with `jupyter book build --all`
+- publishes `./_build/site/public` to GitHub Pages
 
 ## Maintenance Guidance
 
-If we revisit this later, the preferred long-term improvement is not to patch compiled bundles by hand again. The cleaner future direction would be:
+If we revisit this later, the preferred long-term improvement is still not to patch compiled bundles by hand. The cleaner future direction would be:
 
 - make the Colab button a source-level theme action, similar in spirit to the built-in MyST launch button
 - rebuild the vendored theme from source
 - keep this repo-owned theme as the deployment artifact
 
-That would preserve the determinism of the vendored theme while making the customization easier to reason about.
+For now, the current vendored-theme implementation is acceptable because it is deterministic, committed in-repo, and no longer depends on runtime patching or client-side DOM repair.

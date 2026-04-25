@@ -4,6 +4,8 @@ import re
 import os
 import shutil
 
+SITE_IMAGE_DIR = "./_build/site/public/_images"
+
 
 def process_notebook(
     folder_original, folder_new, filename, remove_output=False, verbose=1
@@ -52,7 +54,7 @@ def process_notebook(
     replace_code(HIDDEN_TESTS, "# Removed autograder test. You may delete this cell.")
 
     # Disabling this for now. Current examples have correct path hard coded with an if statement for colab
-    OLD_DATA_PATH = "\.\./data/"  # recall "\." escapes the "." character in regex
+    OLD_DATA_PATH = r"\.\./data/"  # recall "\." escapes the "." character in regex
     NEW_DATA_PATH = (
         "https://raw.githubusercontent.com/dowlinglab/pyomo-doe/main/notebooks/data/"
     )
@@ -80,7 +82,7 @@ def process_notebook(
 
     # Process Home Activity Boxes
     replace_markdown(
-        'style=\"background-color: rgba\(0,255,0,0.05\) ; padding: 10px; border: 1px solid darkgreen;\"',
+        r'style=\"background-color: rgba\(0,255,0,0.05\) ; padding: 10px; border: 1px solid darkgreen;\"',
         'class=\"admonition seealso\"',
     )
     replace_markdown(
@@ -93,7 +95,7 @@ def process_notebook(
 
     # Process Tutorial Activity Boxes
     replace_markdown(
-        'style=\"background-color: rgba\(255,0,0,0.05\) ; padding: 10px; border: 1px solid darkred;\"',
+        r'style=\"background-color: rgba\(255,0,0,0.05\) ; padding: 10px; border: 1px solid darkred;\"',
         'class=\"admonition danger\"',
     )
     replace_markdown(
@@ -102,7 +104,7 @@ def process_notebook(
 
     # Process Class Activity Boxes
     replace_markdown(
-        'style=\"background-color: rgba\(0,0,255,0.05\) ; padding: 10px; border: 1px solid darkblue;\"',
+        r'style=\"background-color: rgba\(0,0,255,0.05\) ; padding: 10px; border: 1px solid darkblue;\"',
         'class=\"admonition note\"',
     )
     replace_markdown(
@@ -111,7 +113,7 @@ def process_notebook(
 
     # Process Note Boxes
     replace_markdown(
-        'style=\"background-color: rgba\(255,255,0,0.05\) ; padding: 10px; border: 1px solid black;\"',
+        r'style=\"background-color: rgba\(255,255,0,0.05\) ; padding: 10px; border: 1px solid black;\"',
         'class=\"admonition tip\"',
     )
     replace_markdown('<b>Note</b>:', '<p class=\"title\"><b>Note</b></p>\n')
@@ -125,7 +127,7 @@ def process_notebook(
     # replace links to media with urls
     # 2022-09-21: removed "!" from the beginning both of these expressions to also work on handouts (pdf) in media folder
     # 2022-09-21: the use case is the error propagation handout
-    MEDIA_LINK = '\[(.*)\]\(\.\./\.\./media/(.*\..*)\)'
+    MEDIA_LINK = r'\[(.*)\]\(\.\./\.\./media/(.*\..*)\)'
     IMAGE_LINK = r'[\1](https://ndcbe.github.io/pyomo-doe/_images/\2)'
 
     for cell in nb.cells:
@@ -142,7 +144,8 @@ def process_notebook(
                     print(f"    WARNING: media file {path_to_media_file} not found.")
                 else:
                     print(f"    copy media file {media_file} to _images")
-                    shutil.copy2(path_to_media_file, "./_build/html/_images")
+                    os.makedirs(SITE_IMAGE_DIR, exist_ok=True)
+                    shutil.copy2(path_to_media_file, SITE_IMAGE_DIR)
             # replace media files with urls to _images
             cell.source = re.sub(MEDIA_LINK, IMAGE_LINK, cell.source)
 
@@ -170,25 +173,23 @@ def process_notebook(
 IMPORTANT. We assume the source files are in XX-dev and the new files go into XX.
 The list below is just values for XX.
 """
-"""
-folders = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16","contrib"]
-
-for fld in folders:
-    
-    # Loop over filenames
-    full_folder_name_original = "./notebooks/" + fld + "-dev"
-    full_folder_name_new = "./notebooks/" + fld
-    
-    print("Processing files in ", full_folder_name_original)
-    
-    for file in sorted(os.listdir(full_folder_name_original)):
-        
-        # Check if file is a notebook using ending
-        if re.match("(.*?)\.ipynb$", file):
-            
-            # process the notebook!
-            process_notebook(full_folder_name_original, full_folder_name_new, file, verbose=1)
-"""
+# Example for processing chapter notebooks kept for reference:
+#
+# folders = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+#            "11", "12", "13", "14", "15", "16", "contrib"]
+#
+# for fld in folders:
+#     full_folder_name_original = "./notebooks/" + fld + "-dev"
+#     full_folder_name_new = "./notebooks/" + fld
+#     print("Processing files in ", full_folder_name_original)
+#     for file in sorted(os.listdir(full_folder_name_original)):
+#         if re.match(r"(.*?)\.ipynb$", file):
+#             process_notebook(
+#                 full_folder_name_original,
+#                 full_folder_name_new,
+#                 file,
+#                 verbose=1,
+#             )
 
 """
 Process assignments which are in a private repo
@@ -200,7 +201,7 @@ full_folder_name_new = "./notebooks/"  # might need to move to /notebooks/assign
 for file in sorted(os.listdir(full_folder_name_original)):
 
     # Check if file is a notebook using ending
-    if re.match("(.*?)\.ipynb$", file):
+    if re.match(r"(.*?)\.ipynb$", file):
 
         # process the notebook!
         process_notebook(
