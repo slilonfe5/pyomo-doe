@@ -4,12 +4,10 @@ This note is for maintainers. It documents the local Jupyter Book / MyST theme c
 
 ## Current Status
 
-As of April 24, 2026, the theme customizations for the Colab button were already committed in git before this note was added.
+As of April 25, 2026, the vendored custom theme remains in this repository, but the stock MyST theme is currently enabled in `myst.yml`.
 
-- Commit at `HEAD` when this note was created: `42e1aaf`
-- Commit message: `Added a customized theme.`
-
-At that moment, `git status --short` was clean.
+- The vendored theme is preserved so we can switch back later without reconstructing it.
+- The current fallback to the stock theme is temporary and is intended to simplify GitHub Pages debugging.
 
 ## What We Changed
 
@@ -37,9 +35,11 @@ Important files include:
 - `themes/pyomo-book-theme/public/build/routes/_index-4AIAQW4G.js`
 - `themes/pyomo-book-theme/public/build/_shared/chunk-MG6QZF7H-pyomo.js`
 
-The MyST configuration points at the vendored theme via:
+The vendored theme is not currently enabled.
 
-- `myst.yml`
+To restore it later, edit `myst.yml` and restore:
+
+- `site.template: themes/pyomo-book-theme`
 
 ## How The Colab Button Works
 
@@ -87,7 +87,7 @@ Safari note:
 
 ## Build / Preview Scripts
 
-These scripts were updated to use the vendored theme flow:
+These scripts were updated during the custom-theme work:
 
 - `scripts/build_local.sh`
 - `scripts/publish.sh`
@@ -131,7 +131,10 @@ If we revisit this later, the preferred long-term improvement is still not to pa
 - rebuild the vendored theme from source
 - keep this repo-owned theme as the deployment artifact
 
-For now, the current vendored-theme implementation is acceptable because it is deterministic, committed in-repo, and no longer depends on runtime patching or client-side DOM repair.
+For now, the vendored theme is preserved but disabled. That gives us a clean fallback path:
+
+- use the stock theme while debugging GitHub Pages behavior
+- switch back later by restoring `site.template: themes/pyomo-book-theme` in `myst.yml`
 
 ## Deployment Debugging Notes
 
@@ -153,6 +156,11 @@ Important conclusions:
 Planned next step:
 
 - re-test whether the generated `_build/html/index.html` correctly prefixes links with `BASE_URL=/pyomo-doe`
+
+Fallback chosen on April 25, 2026:
+
+- temporarily switch `myst.yml` back to the stock theme
+- keep `themes/pyomo-book-theme/` in the repo so the custom theme can be re-enabled with a one-line configuration change
 
 Rationale for this plan:
 
