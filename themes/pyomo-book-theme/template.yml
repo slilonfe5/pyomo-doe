@@ -96,4 +96,4 @@ files:
   - package.json
   - package-lock.json
   - public/**/*
-  - build/**/*
+  - build/index.js
