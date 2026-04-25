@@ -44,12 +44,12 @@ jobs:
         run: npm install -g jupyter-book
       - name: Process notebooks
         run: python ./scripts/process_notebooks.py
-      - name: Build site assets
-        run: jupyter-book build --all
+      - name: Build HTML assets
+        run: jupyter-book build --html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './_build/site/public'
+          path: './_build/html'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

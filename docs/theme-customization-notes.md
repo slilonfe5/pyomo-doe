@@ -101,8 +101,15 @@ The workflow:
 - installs Python and `nbformat` for notebook preprocessing
 - installs Jupyter Book via npm
 - runs `scripts/process_notebooks.py`
-- builds the site with `jupyter book build --all`
-- publishes `./_build/site/public` to GitHub Pages
+- builds the site with `jupyter book build --html`
+- publishes `./_build/html` to GitHub Pages
+
+Why `./_build/html` is used for GitHub Pages:
+
+- the local MyST preview flow uses `./_build/site` for the app/content server layout
+- GitHub Pages needs a static site root with a top-level `index.html`
+- `./_build/site/public` did not include a root `index.html`, which caused a successful deploy to still return a 404
+- `./_build/html` is the correct static publish target for this repository
 
 ## Maintenance Guidance
 
