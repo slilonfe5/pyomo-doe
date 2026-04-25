@@ -91,6 +91,18 @@ These scripts were updated to use the vendored theme flow:
 
 - `scripts/build_local.sh`
 - `scripts/publish.sh`
+- `scripts/preview_html.sh`
+
+Static HTML preview modes:
+
+- `bash scripts/preview_html.sh local`
+  - builds static HTML without `BASE_URL`
+  - serves the site at `http://localhost:8000/`
+  - useful for checking the root static export locally
+- `bash scripts/preview_html.sh pages`
+  - builds static HTML with `BASE_URL=/<repo-name>`
+  - serves the site at `http://localhost:8000/<repo-name>/`
+  - useful for checking behavior that should match GitHub Pages project-site deployment
 
 GitHub Pages is configured via:
 
@@ -120,3 +132,32 @@ If we revisit this later, the preferred long-term improvement is still not to pa
 - keep this repo-owned theme as the deployment artifact
 
 For now, the current vendored-theme implementation is acceptable because it is deterministic, committed in-repo, and no longer depends on runtime patching or client-side DOM repair.
+
+## Deployment Debugging Notes
+
+As of April 25, 2026, GitHub Pages deployment debugging surfaced an important distinction between local preview modes and static deployment modes.
+
+Observed behavior:
+
+- the GitHub Pages workflow could succeed while the deployed site still rendered the MyST `BASE_URL` warning page
+- the deployed HTML contained root-absolute links such as `/build/...` and `/tclab` rather than repository-prefixed links such as `/pyomo-doe/build/...`
+- this caused assets and routes to fail when the site was hosted at `https://dowlinglab.github.io/pyomo-doe/`
+
+Important conclusions:
+
+- this did not initially look like a theme-only failure
+- it appeared more likely to be a mismatch between the static deployment build command and the MyST deployment guidance
+- the MyST deployment docs explicitly describe static deployment using `myst build --html`
+- the GitHub Pages docs for MyST also show `myst init --gh-pages` paired with `myst build --html`
+
+Planned next step:
+
+- switch the static deployment workflow from `jupyter-book build --html` to `myst build --html`
+- make the same change in local static preview helpers and publish documentation
+- re-test whether the generated `_build/html/index.html` correctly prefixes links with `BASE_URL=/pyomo-doe`
+
+Rationale for this plan:
+
+- `jupyter book start` remains the right tool for app-style local preview
+- `myst build --html` appears to be the canonical static deployment/export path in current MyST documentation
+- if the `BASE_URL` issue disappears after switching to `myst build --html`, then the problem is the static export path rather than the vendored theme itself
