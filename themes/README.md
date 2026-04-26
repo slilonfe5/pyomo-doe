@@ -4,20 +4,21 @@ This directory is for maintainer-only theme work.
 
 Current state:
 
-- The live site currently uses the stock MyST theme from the CLI.
+- The preferred active theme path is the source-derived subtree at `vendor/myst-theme/themes/book`.
 - `pyomo-book-theme/` is a preserved compiled-theme prototype that previously added a Colab header button.
 - We are intentionally not editing `pyomo-book-theme/` further by hand, because it contains build artifacts rather than source files intended for maintenance.
 
 Recommended future path:
 
-1. Keep the stock theme active while the site is stable on GitHub Pages.
-2. Build a new source-derived custom theme from the upstream `jupyter-book/myst-theme` repository.
-3. Verify that a repo-hosted stock-equivalent custom theme deploys correctly.
-4. Add the smallest possible Colab header action as a source-level customization.
+1. Use `vendor/myst-theme` as the reusable source-derived theme subtree.
+2. Keep source-level customization work in the separate `dowlinglab/myst-theme` fork.
+3. Pull updates into this repo with `git subtree`.
+4. Treat `pyomo-book-theme/` only as historical reference unless explicitly needed.
 
 Useful maintainer helpers:
 
 - `bash scripts/set_theme.sh stock`
+- `bash scripts/set_theme.sh subtree`
 - `bash scripts/set_theme.sh prototype`
 
 Additional notes live in:

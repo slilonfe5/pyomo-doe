@@ -7,14 +7,15 @@ The main `Readme.md` in this repository should remain a landing page for worksho
 Maintainer helpers added during this cleanup:
 
 - `bash scripts/set_theme.sh stock`
+- `bash scripts/set_theme.sh subtree`
 - `bash scripts/set_theme.sh prototype`
 
 ## Current Status
 
-As of April 25, 2026, the vendored custom theme remains in this repository, but the stock MyST theme is currently enabled in `myst.yml`.
+As of April 25, 2026, the preferred active theme path is the source-derived subtree at `vendor/myst-theme/themes/book`.
 
-- The vendored theme is preserved so we can switch back later without reconstructing it.
-- The current fallback to the stock theme is temporary and is intended to simplify GitHub Pages debugging.
+- The compiled vendored theme is preserved as a reference and fallback path.
+- The subtree-based theme path is intended to be reusable across projects and computers.
 
 ## What We Changed
 
@@ -28,7 +29,7 @@ The main goals were:
 
 ## Where The Custom Theme Lives
 
-The vendored theme is stored here:
+The preserved compiled-theme prototype is stored here:
 
 - `themes/pyomo-book-theme/`
 
@@ -42,9 +43,21 @@ Important files include:
 - `themes/pyomo-book-theme/public/build/routes/_index-4AIAQW4G.js`
 - `themes/pyomo-book-theme/public/build/_shared/chunk-MG6QZF7H-pyomo.js`
 
-The vendored theme is not currently enabled.
+The source-derived subtree theme is stored here:
 
-To restore it later, edit `myst.yml` and restore:
+- `vendor/myst-theme/`
+
+The active MyST configuration now points at:
+
+- `vendor/myst-theme/themes/book`
+
+To switch theme modes locally:
+
+- `bash scripts/set_theme.sh stock`
+- `bash scripts/set_theme.sh subtree`
+- `bash scripts/set_theme.sh prototype`
+
+To restore the older compiled prototype later, edit `myst.yml` and restore:
 
 - `site.template: themes/pyomo-book-theme`
 
@@ -55,7 +68,7 @@ The `themes/` directory now also contains:
 - `themes/README.md`
 - `themes/pyomo-book-theme-source/README.md`
 
-These document the intended future source-derived customization workflow.
+These document the source-derived customization workflow and the preserved prototype.
 
 ## How The Colab Button Works
 
@@ -141,31 +154,25 @@ Why `./_build/html` is used for GitHub Pages:
 
 ## Maintenance Guidance
 
-If we revisit this later, the preferred long-term improvement is still not to patch compiled bundles by hand. The cleaner future direction would be:
+If we revisit this later, the preferred long-term improvement is still not to patch compiled bundles by hand. The cleaner future direction is:
 
-- start from the actual upstream `myst-theme` source repository rather than this build-artifact snapshot
-- make the Colab button a source-level theme action, similar in spirit to the built-in MyST launch button
-- verify that a stock-but-source-derived vendored theme deploys cleanly from this repository
-- then add the smallest possible Colab customization and rebuild the theme assets
-- only after that, vendor the resulting built theme back into this repository if needed
-
-For now, the vendored theme is preserved but disabled. That gives us a clean fallback path:
-
-- use the stock theme while debugging GitHub Pages behavior
-- switch back later by restoring `site.template: themes/pyomo-book-theme` in `myst.yml`
+- keep source-level edits in the separate `dowlinglab/myst-theme` fork
+- use `git subtree` to bring that fork into `vendor/myst-theme`
+- keep the Colab button as a source-level theme action, similar in spirit to the built-in MyST launch button
+- avoid direct hand edits to compiled assets in `themes/pyomo-book-theme/`
 
 Current recommendation:
 
-- keep the stock theme enabled for the live site
+- prefer the subtree theme for ongoing custom theme work
 - avoid further hand-editing of `themes/pyomo-book-theme/`, because it contains compiled build artifacts rather than source files intended for human maintenance
-- treat a future source-derived custom theme as a separate follow-on effort
+- use the stock theme as a fallback if needed during deployment debugging
 
 Concrete next-step plan for that follow-on effort:
 
-1. Start from the upstream `jupyter-book/myst-theme` source repository, not from compiled artifacts.
-2. Reproduce a stock-equivalent repo-hosted theme first.
-3. Confirm GitHub Pages deployment works with that theme and `BASE_URL=/pyomo-doe`.
-4. Only then add the smallest possible Colab header action.
+1. Make source-level edits in the `dowlinglab/myst-theme` fork.
+2. Test the fork locally against `pyomo-doe`.
+3. Pull the fork updates into `vendor/myst-theme` with `git subtree`.
+4. Confirm GitHub Pages deployment works with the subtree theme and `BASE_URL=/pyomo-doe`.
 
 ## Deployment Debugging Notes
 
@@ -188,10 +195,12 @@ Planned next step:
 
 - re-test whether the generated `_build/html/index.html` correctly prefixes links with `BASE_URL=/pyomo-doe`
 
-Fallback chosen on April 25, 2026:
+Subtree workflow chosen on April 25, 2026:
 
-- temporarily switch `myst.yml` back to the stock theme
-- keep `themes/pyomo-book-theme/` in the repo so the custom theme can be re-enabled with a one-line configuration change
+- keep source-level theme development in the separate `dowlinglab/myst-theme` fork
+- import that fork into this repo under `vendor/myst-theme` using `git subtree`
+- point `myst.yml` at `vendor/myst-theme/themes/book`
+- keep `themes/pyomo-book-theme/` in the repo only as historical reference
 
 Rationale for this plan:
 

@@ -9,11 +9,16 @@ usage() {
   cat <<'EOF'
 Usage:
   bash scripts/set_theme.sh stock
+  bash scripts/set_theme.sh subtree
   bash scripts/set_theme.sh prototype
 
 Modes:
   stock
     Use the bundled MyST stock theme by commenting out site.template.
+
+  subtree
+    Use the source-derived theme vendored from the local myst-theme fork at
+    vendor/myst-theme/themes/book.
 
   prototype
     Re-enable the preserved compiled-theme prototype at
@@ -36,13 +41,31 @@ import sys
 
 path = Path(sys.argv[1])
 text = path.read_text()
-old = "site:\n  template: themes/pyomo-book-theme\n"
-new = "site:\n  # To restore the vendored custom theme later, uncomment:\n  # template: themes/pyomo-book-theme\n"
+new = "site:\n  # To restore a non-stock theme later, uncomment one of these:\n  # template: vendor/myst-theme/themes/book\n  # template: themes/pyomo-book-theme\n"
+for old in [
+    "site:\n  template: themes/pyomo-book-theme\n",
+    "site:\n  template: vendor/myst-theme/themes/book\n",
+]:
+    if old in text:
+        text = text.replace(old, new, 1)
+path.write_text(text)
+PY
+    echo "Switched myst.yml to stock theme."
+    ;;
+  subtree)
+    python - "$MYST_FILE" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text()
+old = "site:\n  # To restore a non-stock theme later, uncomment one of these:\n  # template: vendor/myst-theme/themes/book\n  # template: themes/pyomo-book-theme\n"
+new = "site:\n  template: vendor/myst-theme/themes/book\n"
 if old in text:
     text = text.replace(old, new, 1)
 path.write_text(text)
 PY
-    echo "Switched myst.yml to stock theme."
+    echo "Enabled source-derived subtree theme in myst.yml."
     ;;
   prototype)
     python - "$MYST_FILE" <<'PY'
@@ -51,7 +74,7 @@ import sys
 
 path = Path(sys.argv[1])
 text = path.read_text()
-old = "site:\n  # To restore the vendored custom theme later, uncomment:\n  # template: themes/pyomo-book-theme\n"
+old = "site:\n  # To restore a non-stock theme later, uncomment one of these:\n  # template: vendor/myst-theme/themes/book\n  # template: themes/pyomo-book-theme\n"
 new = "site:\n  template: themes/pyomo-book-theme\n"
 if old in text:
     text = text.replace(old, new, 1)

@@ -41,8 +41,7 @@ project:
         - file: exercise_solutions/parmest_exercise.ipynb
         - file: exercise_solutions/doe_exercise.ipynb
 site:
-  # To restore the vendored custom theme later, uncomment:
-  # template: themes/pyomo-book-theme
+  template: vendor/myst-theme/themes/book
   options:
     logo: PyomoDoE-sm.png
     folders: true
