@@ -258,7 +258,17 @@ def helper(my_array, time):
 
 ### -------------- Part 4 v 2: Create Experiment object -------------- ###
 class TC_Lab_experiment(Experiment):
-    def __init__(self, data, alpha=0.00016, theta_initial=None, number_of_states=2, sine_amplitude=None, sine_period=None, reparam=False):
+    def __init__(
+        self,
+        data,
+        alpha=0.00016,
+        theta_initial=None,
+        number_of_states=2,
+        sine_amplitude=None,
+        sine_period=None,
+        reparam=False,
+        measurement_error=0.25,
+    ):
         """
         Arguments
         ---------
@@ -268,6 +278,7 @@ class TC_Lab_experiment(Experiment):
         number_of_states: number of states in the heat transfer model (must be 2 or 4), default: 2
         sine_amplitude: float, amplitude of the sine wave, default: None (do not use the sine wave)
         sine_period: float, period of the sine wave, default: None (do not use the sine wave)
+        measurement_error: float, constant measurement error of sensor 1, default: 0.25 deg C
         
         """
         self.data = data
@@ -314,6 +325,7 @@ class TC_Lab_experiment(Experiment):
         self.sine_period = sine_period
         
         self.reparam = reparam
+        self.measurement_error = measurement_error
         
         self.model = None
     
@@ -651,7 +663,7 @@ class TC_Lab_experiment(Experiment):
         
         m.measurement_error = Suffix(direction=Suffix.LOCAL)
         # Add sensor 1 temperature (m.Ts1) measurement error (assuming constant error of 0.25 deg C)
-        m.measurement_error.update((m.Ts1[t], 0.25) for t in self.data.time)
+        m.measurement_error.update((m.Ts1[t], self.measurement_error) for t in self.data.time)
         if self.number_of_states == 4:
             m.measurement_error.update((m.Ts2[t], 1) for ind, t in enumerate(self.data.time))
         
