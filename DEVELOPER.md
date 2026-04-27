@@ -1,6 +1,6 @@
 # Developer Guide
 
-This guide is for contributors and maintainers of the workshop materials. The top-level [Readme.md](./Readme.md) is intentionally kept as a landing page for workshop attendees.
+This guide is for contributors and maintainers of the workshop materials. The top-level [Readme.md](./Readme.md) is a landing page for workshop attendees.
 
 ## Purpose
 
@@ -173,7 +173,7 @@ GitHub Pages settings for this repository should use:
 
 ## Updating the vendored theme
 
-The theme source is maintained in the separate `dowlinglab/myst-theme` fork and imported here using `git subtree`.
+The theme source is maintained in the separate [`dowlinglab/myst-theme`](https://github.com/dowlinglab/myst-theme) fork and imported here using `git subtree`.
 
 Typical workflow:
 
@@ -184,7 +184,7 @@ Typical workflow:
 5. Test the website locally with `bash scripts/build_local.sh` or `bash scripts/preview_html.sh pages`.
 6. Commit both the subtree update and the regenerated packaged theme artifact.
 
-## Files maintainers should know
+## Immportant files for maintainers
 
 - [myst.yml](./myst.yml)
 - [environment-maintainer.yml](./environment-maintainer.yml)

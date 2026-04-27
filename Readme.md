@@ -4,7 +4,12 @@ Welcome to the interactive tutorial workshop for parameter estimation and model-
 
 ![Pyomo workflow](./images/pyomo_workflow_new.png)
 
-These materials were created by [Prof. Alexander Dowling](https://dowlinglab.nd.edu/people/professor-alexander-w-dowling/) at the University of Notre Dame. Special thanks to [Prof. Jeff Kantor](https://engineering.nd.edu/news/in-memoriam-jeffrey-kantor-former-vice-president-associate-provost-and-dean/), [Maddie Watson](https://dowlinglab.nd.edu/people/madelynn-watson/), [Molly Dougher](https://dowlinglab.nd.edu/people/molly-dougher/), and [Hailey Lynch](https://dowlinglab.nd.edu/people/hailey-lynch/) for assistance with the TCLab models and activities. Pyomo.DoE was developed by [Jialu Wang](https://dowlinglab.nd.edu/people/jialu-wang/) and Alexander Dowling with assistance from [John Siirola](https://www.sandia.gov/ccr/staff/john-daniel-siirola/), [Bethany Nicholson](https://scholar.google.com/citations?user=WxqNQ6IAAAAJ&hl=en), [Miranda Mundt](https://ieeexplore.ieee.org/author/37089520396), [Hailey Lynch](https://dowlinglab.nd.edu/people/hailey-lynch/), and [Dan Laky](https://dowlinglab.nd.edu/people/daniel-laky/). Pyomo.DoE was refactored over the summer of 2024 by [Dan Laky](https://dowlinglab.nd.edu/people/daniel-laky/) and [Prof. Alexander Dowling](https://dowlinglab.nd.edu/people/professor-alexander-w-dowling/), who both also updated the workshop materials to coincide with the refactored versions of both Pyomo.DoE and parmest.
+These materials were created by [Prof. Alexander Dowling](https://dowlinglab.nd.edu/people/professor-alexander-w-dowling/), [Dr. Dan Laky](https://dowlinglab.nd.edu/people/daniel-laky/), [Stephen Cini](https://dowlinglab.nd.edu/people/stephen-cini/), [Shammah Lilonfe](https://dowlinglab.nd.edu/people/shammah-lilonfe/), [Shuvo Mondal](https://dowlinglab.nd.edu/people/shuvashish-mondal/), and [Dr. Shilpa Narasimhan](https://dowlinglab.nd.edu/people/dr-shilpa-narasimhan/) at the University of Notre Dame. 
+
+
+Special thanks to [Prof. Jeff Kantor](https://engineering.nd.edu/news/in-memoriam-jeffrey-kantor-former-vice-president-associate-provost-and-dean/), [Maddie Watson](https://dowlinglab.nd.edu/people/madelynn-watson/), [Molly Dougher](https://dowlinglab.nd.edu/people/molly-dougher/), and [Hailey Lynch](https://dowlinglab.nd.edu/people/hailey-lynch/) for assistance with the TCLab models and activities.
+
+Pyomo.DoE was developed by (in alphabetic order): [Stephen Cini](https://dowlinglab.nd.edu/people/stephen-cini/), [Prof. Alexander Dowling](https://dowlinglab.nd.edu/people/professor-alexander-w-dowling/), [Dan Laky](https://dowlinglab.nd.edu/people/daniel-laky/), [Miranda Mundt](https://ieeexplore.ieee.org/author/37089520396), [Bethany Nicholson](https://scholar.google.com/citations?user=WxqNQ6IAAAAJ&hl=en), [John Siirola](https://www.sandia.gov/ccr/staff/john-daniel-siirola/), and [Jialu Wang](https://dowlinglab.nd.edu/people/jialu-wang/).
 
 ## American Control Conference (ACC) 2026 Workshop
 
@@ -52,8 +57,6 @@ In this workshop, we will learn how to develop digital twin models in the open-s
 
 This tutorial assumes the audience is familiar with basic Python programming. (New to Python? Check out [this](https://lectures.scientific-python.org/index.html) and similar online resources.) The tutorial is designed to run in Google Colab. The `tclab_pyomo.py` file contains the Pyomo model for our motivating system as well as utilities to install software on Colab.
 
-### For workshop participants / normal users
-
 Alternatively, participants can run the tutorial locally on their computer. Use the following command to create a new conda environment:
 
 ```
@@ -94,11 +97,10 @@ Developer and maintainer setup instructions are documented in [DEVELOPER.md](./D
 
 The [Pyomo.DoE documentation](https://pyomo.readthedocs.io/en/stable/contributed_packages/doe/doe.html) is a great resource and includes a different set of examples. You can also go through our reaction kinetics example, which is split into the [experiment abstraction](https://github.com/Pyomo/pyomo/blob/main/pyomo/contrib/doe/examples/reactor_experiment.py) and [execution example](https://github.com/Pyomo/pyomo/blob/main/pyomo/contrib/doe/examples/reactor_example.py).
 
-If you use Pyomo.DoE, please cite our paper:
+If you use Pyomo.DoE, please cite https://doi.org/10.1002/aic.17813 and [Laky et al. (2026)](https://doi.org/10.48550/arXiv.2604.03354):
+* Wang and Dowling, 2022. **Pyomo.DoE: An open-source package for model-based design of experiments in Python. AIChE Journal**, 68(12), e17813. doi:10.1002/aic.17813
+* Laky, Lilonfe, Martin, Klise, Nicholson, Siirola, and Dowling, 2026. **Optimal Experimental Design using Eigenvalue-Based Criteria with Pyomo.DoE**. arXiv.
 
-```{admonition} Pyomo.DoE paper
-Wang and Dowling, 2022. Pyomo.DoE: An open-source package for model-based design of experiments in Python. AIChE Journal, 68(12), e17813. https://doi.org/10.1002/aic.17813
-```
 
 New to Pyomo? Check out these great resources:
 * [Pyomo documentation](https://pyomo.readthedocs.io/en/stable/)
