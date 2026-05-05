@@ -894,12 +894,6 @@ def extract_plot_results(tc_exp_data, model, number_of_states=2):
         plt.tight_layout()
         plt.show()
 
-        print("DoE optimize_experiments summary:")
-        print("parameter scenario:", 0)
-        print("number of experiments:", len(experiments))
-        print("objective:", doe_results["solution"].get("objective", "unknown"))
-        print(" ")
-
         return mod_results
 
     # Branch 2: original single-model extraction and plotting
