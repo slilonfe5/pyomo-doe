@@ -31,18 +31,23 @@ We are scheduled for a [half-day afternoon workshop](https://acc2026.a2c2.org/pr
 | noon  | *Welcome, Overview, and Computer Setup* |
 | 12:15 pm | **Part 1: Dynamic Modeling and Optimization in Pyomo** |
 | | [TC Lab Model](./notebooks/tclab_model.ipynb) |
+| | [Numpy Simulation](./notebooks/numpy_simulation.ipynb) |
 | | [Simulation in Pyomo](./notebooks/pyomo_simulation.ipynb) |
+| | [Experiment Abstraction](./notebooks/experiment_abstraction.ipynb) |
 | | Hands-on Examples |
 | 1:30 pm | *Short Break* |
 | 1:45 pm | **Part 2: Parameter Estimation** |
-| | [Parmest package overview](./notebooks/parmest.ipynb) |
-| | [Parmest Exercise](./notebooks/parmest_exercise.ipynb) |
+| | [ParmEst Overview](./notebooks/parmest.ipynb) |
+| | [Uncertainty Quantification](./notebooks/parmest_uncertainty_quantification.ipynb) |
+| | [Multistart Profile Likelihood](./notebooks/parmest_multistart_profilelikelihood.ipynb) |
+| | [Regularization](./notebooks/parmest_regularization.ipynb) |
 | | Hands-on Examples | 
 | 3:00 pm | *Coffee Break* |
 | 3:30 pm | **Part 3: Optimal Experiment Design** |
-| | [Pyomo.DoE exploratory analysis](./notebooks/doe_exploratory_analysis.ipynb) |
-| | [Pyomo.DoE optimal experimental design](./notebooks/doe_optimize.ipynb) |
-| | [Pyomo.DoE Exercise](./notebooks/doe_exercise.ipynb) |
+| | [Pyomo.DoE Overview](./notebooks/doe_optimize.ipynb) |
+| | [Objective Choices](./notebooks/doe_optimize_objectives.ipynb) |
+| | [Symbolic Derivatives](./notebooks/doe_optimize_symbolic.ipynb) |
+| | [Multiple Experiments](./notebooks/doe_multiexperiment.ipynb) |
 | | Hands-on Examples |
 | 5:00 pm | *Adjourn* |
 
