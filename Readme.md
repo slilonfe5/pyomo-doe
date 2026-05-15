@@ -28,23 +28,23 @@ We are scheduled for a [half-day afternoon workshop](https://acc2026.a2c2.org/pr
 
 | Time | Topic |
 | ---- | -------- |
-| 1:00 pm  | *Welcome and Overview* |
-| 1:15 pm | **Dynamic Modeling and Optimization in Pyomo** |
+| noon  | *Welcome, Overview, and Computer Setup* |
+| 12:15 pm | **Part 1: Dynamic Modeling and Optimization in Pyomo** |
 | | [TC Lab Model](./notebooks/tclab_model.ipynb) |
 | | [Simulation in Pyomo](./notebooks/pyomo_simulation.ipynb) |
 | | Hands-on Examples |
-| 2:00 pm | *Break* |
-| 2:15 pm | **Parameter Estimation** |
+| 1:30 pm | *Short Break* |
+| 1:45 pm | **Part 2: Parameter Estimation** |
 | | [Parmest package overview](./notebooks/parmest.ipynb) |
 | | [Parmest Exercise](./notebooks/parmest_exercise.ipynb) |
 | | Hands-on Examples | 
-| 3:15 pm | *Break* |
-| 3:30 pm | **Optimal Experiment Design** |
+| 3:00 pm | *Coffee Break* |
+| 3:30 pm | **Part 3: Optimal Experiment Design** |
 | | [Pyomo.DoE exploratory analysis](./notebooks/doe_exploratory_analysis.ipynb) |
 | | [Pyomo.DoE optimal experimental design](./notebooks/doe_optimize.ipynb) |
 | | [Pyomo.DoE Exercise](./notebooks/doe_exercise.ipynb) |
 | | Hands-on Examples |
-| 4:45 pm | *Adjourn* |
+| 5:00 pm | *Adjourn* |
 
 ## What will I learn in this workshop?
 
