@@ -8,6 +8,7 @@ import sys
 import os.path
 import os
 import re
+import json
 
 import subprocess
 
@@ -105,27 +106,47 @@ if "google.colab" in sys.modules:
     # Check if correct version of Pyomo is installed
     def _check_pyomo_installed():
         '''
-        This is no longer needed because improvements to Pyomo.DoE have been merged into
-        the next release of Pyomo. This function is kept for reference.
+        Check whether Pyomo was installed from the workshop git branch.
         '''
 
         try:
-            v = subprocess.run(
-                ["pyomo", "--version"], check=True, capture_output=True, text=True
-            )
-            if "6.10.1.a0" in v.stdout: # This is brittle. A better way is to check the git source for the Pyomo install.
-                reinstall_pyomo = False
-                print("Correct version of Pyomo.DoE is installed.")
-            else:
-                reinstall_pyomo = True
-        except FileNotFoundError:
-            reinstall_pyomo = True
+            import importlib.metadata as md
+        except ImportError:
+            return False
 
-        return reinstall_pyomo
+        expected_url = "https://github.com/dowlinglab/pyomo.git"
+        expected_revision = "pyomo-doe-workshop-2026"
+
+        try:
+            dist = md.distribution("pyomo")
+        except md.PackageNotFoundError:
+            return False
+
+        direct_url_text = dist.read_text("direct_url.json")
+        if not direct_url_text:
+            return False
+
+        try:
+            direct_url = json.loads(direct_url_text)
+        except json.JSONDecodeError:
+            return False
+
+        vcs_info = direct_url.get("vcs_info", {})
+        if vcs_info.get("vcs") != "git":
+            return False
+
+        if vcs_info.get("requested_revision") != expected_revision:
+            return False
+
+        if direct_url.get("url") != expected_url:
+            return False
+
+        print("Correct git branch of Pyomo.DoE is installed.")
+        return True
 
     # Install updated version of Pyomo
     
-    if _check_pyomo_installed():
+    if not _check_pyomo_installed():
         print("Installing updated version of Pyomo.DoE...")
         print("  (this takes up to 5 minutes)")
         v = subprocess.run(
@@ -144,7 +165,10 @@ if "google.colab" in sys.modules:
         if verbose:
             print(v.stdout)
             print(v.stderr)
-        _check_pyomo_installed()
+        if not _check_pyomo_installed():
+            raise RuntimeError(
+                "Pyomo was installed, but not from the expected git branch."
+            )
     
 
     import idaes
@@ -1386,6 +1410,3 @@ def recover_original_covariance(reform_params, cov_reform, alpha, P1):
         columns=["Ua", "Ub", "Inv_CpH", "inv_CpS"], )
 
     return cov_orig
-
-
-
