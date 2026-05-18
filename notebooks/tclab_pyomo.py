@@ -1253,6 +1253,15 @@ def plot_profile_likelihood(
     # Flatten axes in case axes is a 2D array from plt.subplots(..., squeeze=False)
     axes_flat = axes.flatten()
 
+    # Label the threshold dashed line only on the top subplot
+    top_ax = axes_flat[0]
+    for line in top_ax.lines:
+        if line.get_linestyle() == "--":
+            line.set_label("threshold")
+            break
+
+    top_ax.legend(loc="best", prop={"size": 8})
+
     if xlims is not None:
         for ax, xlim in zip(axes_flat, xlims):
             if xlim is not None:
