@@ -1260,7 +1260,7 @@ def plot_profile_likelihood(
             line.set_label("threshold")
             break
 
-    top_ax.legend(loc="best", prop={"size": 8})
+    top_ax.legend(loc="best", prop={"size": 12})
 
     if xlims is not None:
         for ax, xlim in zip(axes_flat, xlims):
